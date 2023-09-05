@@ -10,8 +10,6 @@ source("github/GenerativeModel/otherFunctions.R")
 
 
 
-#data.directory <- paste0(SCRATCH_DIR,"github/Synthetic_Experiments/data/")
-
 # Parameters of the probabilistic generative model:
 
 seed <- 2
