@@ -4,18 +4,9 @@
 # 
 source("github/GenerativeModel/generateModel.R")
 source("github/GenerativeModel/initialization.R")
-source("github/GenerativeModel/EMalgorithm_model_S.R")
+source("github/GenerativeModel/EMalgorithm_model.R")
 source("github/GenerativeModel/Loglikelihood.R")
 source("github/GenerativeModel/otherFunctions.R")
-
-
-
-setwd("/Users/ozaballa/Desktop/ONINTZE/OSAKIDETZA/DISEASE PROGRESSION")
-source("Structure generative model/github/GenerativeModel/generateModel.R")
-source("Structure generative model/github/GenerativeModel/initialization.R")
-source("Structure generative model/github/GenerativeModel/EMalgorithm.R")
-source("Structure generative model/github/GenerativeModel/LogLikelihood.R")
-source("Structure generative model/github/GenerativeModel/otherFunctions.R")
 
 
 
