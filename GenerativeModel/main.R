@@ -45,7 +45,7 @@ initialization <- normalizedModels[[2]]
 
 
 # Expectation-Maximization algorithm
-(EMresults <- EM(maxIter=10))
+(EMresults <- EM(maxIter=100))
 
 # EM function returns the learned model parameters and the loglikelihood calculated in each iteration of the algorithm
 
