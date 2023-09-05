@@ -20,7 +20,7 @@ It is a free R code that is under [MIT License](/LICENSE).
 
 ## Evaluation
 
-We display in this repository the evaluation code of the model to demonstrate that we are able to recover the original generative model, similar to the one performed on the paper. [Evaluation](/Evaluation) folder includes more details of the [dataset generation](/GenerativeModel/generate_synthetic_datasets.R) and commands to execute the evaluation method. 
+We display in this repository the evaluation code of the model to demonstrate that we are able to recover the original generative model, similar to the one performed on the paper. [Evaluation](/Evaluation) folder includes more details of the dataset generation and commands to execute the evaluation method. 
 
 
 
