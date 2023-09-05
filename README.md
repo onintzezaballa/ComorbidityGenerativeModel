@@ -17,14 +17,10 @@ It is a free R code that is under [MIT License](/LICENSE).
 * `Loglikelihood.R` computes the log-likelihood of a model
 
 
-## Data
-
-We use synthetic datasets generated with the proposed model.
-
 
 ## Evaluation
 
-We display in this repository an evaluation of the model to demonstrate that we are able to recover the original generative model, similar to the one performed on the paper. [Evaluation](/Evaluation) folder includes more details of the dataset generation, commands to execute the method, and results. 
+We display in this repository the evaluation code of the model to demonstrate that we are able to recover the original generative model, similar to the one performed on the paper. [Evaluation](/Evaluation) folder includes more details of the [dataset generation](/GenerativeModel/generate_synthetic_datasets.R) and commands to execute the evaluation method. 
 
 
 
