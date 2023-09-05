@@ -1,4 +1,4 @@
-Evaluation experiments with synthetic data
+# Evaluation experiments with synthetic data
 
 The contents of this directory include the following scripts:
 * `generate_synthetic_datasets.R` This file is used for generating synthetic datasets. Within this script, you can customize the seed parameters, action values, the number of classes, and the number of stages to create a generative model. To replicate the experiments conducted in the paper, please use seeds 2, 3, 4, 5, and 6.
