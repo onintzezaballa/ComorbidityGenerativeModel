@@ -9,8 +9,8 @@ source("github/GenerativeModel/otherFunctions.R")
 
 ### FUNCTION:
 LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K, theta_c, init_s, theta_s, theta_d, init_a_d, theta_a_d){
-  environment(f_function_general_classes) <- environment()
-  environment(g_function_general_classes) <- environment()
+  environment(f_function) <- environment()
+  environment(g_function) <- environment()
 
   suma.total <- 0
   length.total <- 0
@@ -29,7 +29,7 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
     # cogemos solo los posibles
     pos_possible_t_sets <- lapply(1:ncol(t_sets),  function(x) {which( t_sets[,x] <= fixedPositions[x])})
     t_sets <- t_sets[as.numeric(names(which(table(unlist(pos_possible_t_sets))==length(values_d)))),]
-    invisible(apply(t_sets, MARGIN=1, function(x) {f_function_general_classes(K,c, cbind(x)) } ))
+    invisible(apply(t_sets, MARGIN=1, function(x) {f_function(K,c, cbind(x)) } ))
     f_matrix[is.na(f_matrix)] <<- 0
     colnames(f_matrix) <<- c(0,1:length(a))
     rownames(f_matrix) <<- c(0,1:length(a))
@@ -38,7 +38,7 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
     a_last <- which(values_a==a[length(a)])
     d_last <- which(fixedPositions==length(a))
     ActiveDiseases <- fixedPositions ==length(a)
-    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
     r <- nrow(combinationsDisease)
     theta_s_n <- theta_s[[d_last]][[a_last]][r_prev,r]
     f_matrix[t(cbind(fixedPositions + 1))] <<-   theta_s_n*f_matrix[t(cbind(fixedPositions + 1))]
@@ -52,7 +52,7 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
     a_last <- which(values_a==a[length(a)])
     d_last <- which(fixedPositions==length(a))
     ActiveDiseases <- fixedPositions ==length(a)
-    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
     r <- nrow(combinationsDisease)
     theta_s_n <- theta_s[[d_last]][[a_last]][r_prev,r]
     
@@ -66,7 +66,7 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
     auxPositions <- c(0,sort(fixedPositions))
     auxPositions <- auxPositions[-length(auxPositions)]
     auxPositions <- auxPositions[orderMin]
-    invisible(apply(t_sets, MARGIN=1, function(x) { g_function_general_classes(K, c, cbind(x)) } ))
+    invisible(apply(t_sets, MARGIN=1, function(x) { g_function(K, c, cbind(x)) } ))
     g_matrix[is.na(g_matrix)] <<- 0
     colnames(g_matrix) <<- c(0,1:length(a))
     rownames(g_matrix) <<- c(0,1:length(a))
@@ -119,12 +119,12 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
       
       
       if (sum(tprima < (t_a-K))>0){
-        tprima <- tprima[-which(tprima < (t_a-K))] # OJO! solo miramos si la actuaciones viene de las K anteriores actuaciones. quitamos el resto
+        tprima <- tprima[-which(tprima < (t_a-K))]
       }
       if (sum(tprima)==0) {
         next
       } else if (abs(t_a - max(tprima))>1){
-        if (auxPositions[1]- auxPositions[2]==1){ # estan ordenados de maximo a minimo (estamos en t=length(a) por eso solo tenemos en cuenta los 2 ultimos diseases de max posicion)
+        if (auxPositions[1]- auxPositions[2]==1){ # ordered from maximum to minimum 
           # Aqui solo entran los que tienen los END de las disease seguidos
           d_prev<- orderMax[2]
           a_prev <- which(values_a==a[t_a-1])
