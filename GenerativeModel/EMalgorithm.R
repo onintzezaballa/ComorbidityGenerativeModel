@@ -616,7 +616,7 @@ EM <- function(dataset, values_d, values_a, InitialPositions, EndPositions, K, m
     # Likelihood
     if (likelihoodEps!=FALSE){
       LogLikelihood <- c(LogLikelihood, LogLikelihood(all_prob_c, InitialPositions,  EndPositions, K)) 
-      
+      print(LogLikelihood)
       if (iter>1){
         if (abs(LogLikelihood[iter] - LogLikelihood[iter-1])< likelihoodEps) {aux<-FALSE}
       }
@@ -643,8 +643,7 @@ EM <- function(dataset, values_d, values_a, InitialPositions, EndPositions, K, m
                            'Iterations' = iter-1,
                            'Likelihood eps' = likelihoodEps,
                            'K'=K)
-  print(dataexport)
-  
+
   if (saveResults==TRUE){
     print('Saving...')
     dir.create(new.directory, showWarnings=FALSE)

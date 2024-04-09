@@ -24,6 +24,7 @@ MSE <- function(init_a_d, real_init_a_d, theta_d, real_theta_d, theta_a_d, real_
 }
 
 
+
 smoothingParameters <- function(params= c(rep(0.05, 5)), initialization = F , ...){
   # params: smoothing values for the estimated parameters 
   # initialization: if TRUE, the smoothing value is only added to theta_d model (it is used in the initialization of the model)
