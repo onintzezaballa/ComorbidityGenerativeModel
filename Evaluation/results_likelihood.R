@@ -1,10 +1,11 @@
 # Scripts to plot the generalization and fitting of the SYNTHETIC DATA
+# (Generate datasets using generate_synthetic_datasets.R and train the model using main.R)
 
-source("github/GenerativeModel/generateModel.R")
-source("github/GenerativeModel/initialization.R")
-source("github/GenerativeModel/EMalgorithm_model.R")
-source("github/GenerativeModel/Loglikelihood.R")
-source("github/GenerativeModel/otherFunctions.R")
+source("GenerativeModel/generateModel.R")
+source("GenerativeModel/initialization.R")
+source("GenerativeModel/EMalgorithm.R")
+source("GenerativeModel/Loglikelihood.R")
+source("GenerativeModel/otherFunctions.R")
 
 
 ### FUNCTION:
@@ -38,7 +39,7 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
     a_last <- which(values_a==a[length(a)])
     d_last <- which(fixedPositions==length(a))
     ActiveDiseases <- fixedPositions ==length(a)
-    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
+    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
     r <- nrow(combinationsDisease)
     theta_s_n <- theta_s[[d_last]][[a_last]][r_prev,r]
     f_matrix[t(cbind(fixedPositions + 1))] <<-   theta_s_n*f_matrix[t(cbind(fixedPositions + 1))]
@@ -52,7 +53,7 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
     a_last <- which(values_a==a[length(a)])
     d_last <- which(fixedPositions==length(a))
     ActiveDiseases <- fixedPositions ==length(a)
-    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
+    r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
     r <- nrow(combinationsDisease)
     theta_s_n <- theta_s[[d_last]][[a_last]][r_prev,r]
     
@@ -119,12 +120,12 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
       
       
       if (sum(tprima < (t_a-K))>0){
-        tprima <- tprima[-which(tprima < (t_a-K))]
+        tprima <- tprima[-which(tprima < (t_a-K))] # OJO! solo miramos si la actuaciones viene de las K anteriores actuaciones. quitamos el resto
       }
       if (sum(tprima)==0) {
         next
       } else if (abs(t_a - max(tprima))>1){
-        if (auxPositions[1]- auxPositions[2]==1){ # ordered from maximum to minimum 
+        if (auxPositions[1]- auxPositions[2]==1){ # estan ordenados de maximo a minimo (estamos en t=length(a) por eso solo tenemos en cuenta los 2 ultimos diseases de max posicion)
           # Aqui solo entran los que tienen los END de las disease seguidos
           d_prev<- orderMax[2]
           a_prev <- which(values_a==a[t_a-1])
@@ -187,14 +188,14 @@ LogLikelihood_experiments <- function(dataset, InitialPositions, EndPositions, K
 
 
 ### RESULTS : ####
-m<-50 # maximum length
+m<-20 # maximum length
 values_d <- c("1","2")
 values_a <- c( "0", "1", "2","3", "4", "5", "6","7","8","9")
 num.classes <- 2
 
 
 seed <-2
-n <- 300
+n <- 100
 
 syntheticResults <-  data.frame('Seed'= seed,
                                 'Numero Sec'= n,
@@ -208,32 +209,33 @@ syntheticResults <-  data.frame('Seed'= seed,
                                 )
 
 
-data.directory <- paste0("github/GenerativeModel//data/seed_", seed, "/")
+data.directory <- paste0("data/seed_", seed, "/")
 
 set.seed(seed)
-genModel <-generateModel(num.classes, values_d, seed, values_a)
-sample_sequences <- generateSequences(genModel)
-
+# 2 diseases:
+originalModel <- generateModel_2diseases(n, m, values_d, values_a, num.classes, seed = seed)
+# 3 diseases:
+#originalModel <- generateModel_3diseases(n, m, values_d, values_a, num.classes, seed = seed)
 
 #Original model
-real_theta_c <- genModel$theta_c
-real_theta_s <- genModel$theta_s
-real_theta_d <- genModel$theta_d
-real_init_a_d <- genModel$init_a_d
-real_theta_a_d <- genModel$theta_a_d
-dataset <- sample_sequences$dataset
-originalDiseaseSeq <- sample_sequences$originalDiseaseSequence
-EndPositions <- sample_sequences$EndPositions  
-InitialPositions <- sample_sequences$InitialPositions
-combinationsDisease <- sample_sequences$combinationsDisease
-originalClass <- sample_sequences$originalClass
+real_theta_c <- originalModel$theta_c
+real_theta_s <- originalModel$theta_s
+real_theta_d <- originalModel$theta_d
+real_init_a_d <- originalModel$init_a_d
+real_theta_a_d <- originalModel$theta_a_d
+dataset <- originalModel$dataset
+originalDiseaseSeq <- originalModel$originalDiseaseSequence
+EndPositions <- originalModel$EndPositions  
+InitialPositions <- originalModel$InitialPositions
+combinationsDisease <- originalModel$combinationsDisease
+originalClass <- originalModel$originalClass
 
 # (Execute after learning the model using main.R)
-output.directory <-  paste0("github/output/n",n,"_",num.classes,"classes_",length(values_d),"diseases_", length(values_a),"actions_seed",seed)
+output.directory <-  paste0("output/N",n,"_",num.classes,"classes_",length(values_d),"diseases_", length(values_a),"actions_seed",seed)
 
 # RESULTS:
 print(paste(seed,n))
-load(paste0(output.directory,"seed",seed,"_N",n, "/results.Rdata")) 
+load(paste0(output.directory,"/results.Rdata")) 
 train_data <- read.csv(paste0(data.directory,"/train_seed",seed,"_N", n, ".csv"), header =TRUE)
 EndPositions <- read.csv(paste0(data.directory,"/EndPos_train_seed",seed,"_N", n, ".csv"), header =TRUE)
 InitialPositions <- read.csv(paste0(data.directory,"/InitialPos_train_seed",seed,"_N", n, ".csv"), header =TRUE)

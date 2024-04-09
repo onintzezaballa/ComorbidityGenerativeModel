@@ -11,7 +11,7 @@ load(paste0(output.directory,"/seed",seed,"_N",n, "/results_plot.Rdata"))
 syntheticResults_plot <- syntheticResults
 for ( n in c(100,300,500,800,1000,1200,1500)){
   load(paste0(output.directory,"/seed",seed,"_N",n, "/results_plot.Rdata")) 
-    syntheticResults_plot <- rbind(syntheticResults_plot, syntheticResults)
+  syntheticResults_plot <- rbind(syntheticResults_plot, syntheticResults)
 }
 syntheticResults_plot[syntheticResults_plot$Seed==seed,"ll_original_test"] <- syntheticResults_plot[(syntheticResults_plot$Seed==seed & syntheticResults_plot$Numero.Sec==100),"ll_original_test"]
 
