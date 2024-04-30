@@ -1,4 +1,3 @@
-# Hay que generalizarlo para mas diseases, solo esta hecho para 2 y 3
 
 ParameterInitialization <- function(n, m, dataset, EndPositions, InitialPositions,  seed=1){
   # This function randomly generates parameters of the model in order to initialize the EM algorithm
@@ -86,7 +85,7 @@ ParameterInitialization <- function(n, m, dataset, EndPositions, InitialPosition
             r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
             theta_d_n <- theta_d_sampled[[c]][[r]]
             subsample_position <- (prev_cut+aux_i):(d_cuts[cut]-1)
-            disease_subsample <- sample(values_d, replace=TRUE, size= length(subsample_position),prob = theta_d_n[,]) # aqui cambia depende del seed
+            disease_subsample <- sample(values_d, replace=TRUE, size= length(subsample_position),prob = theta_d_n[,]) # Here it changes depending on the seed
             list_disease_subsamples[[j]] <- c(disease_subsample)
             disease_sample[subsample_position] <- disease_subsample
             
