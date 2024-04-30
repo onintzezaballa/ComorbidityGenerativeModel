@@ -23,7 +23,8 @@ num.classes <- 2
 print(paste("N:",n))
 print(paste("Seed:",seed))
 
-output.directory <-  paste0("output/N",n,"_",num.classes,"classes_",length(values_d),"diseases_", length(values_a),"actions_seed",seed,"/")
+#output.directory <-  paste0("output/N",n,"_",num.classes,"classes_",length(values_d),"diseases_", length(values_a),"actions_seed",seed,"/")
+output.directory <- paste0("output/seed",seed,"_N",n, "/")
 dir.create(output.directory, showWarnings=T)
 
 
