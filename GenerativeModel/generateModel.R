@@ -1,5 +1,5 @@
 
-# 2 diseases
+# Function for generating data considering 2 diseases
 
 generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
   # we include diseases in co-occurrence states p(s_t|s_t-1,a_t-1,d_t-1)
@@ -17,14 +17,14 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
   # x= disease
   # y = action
   
-  # Dependencia entre estados de co-ocurrencia
-  invisible(sapply(1:length(theta_s), function(x) { sapply(1:length(values_a), function(y) {set.seed(x+y+1)  #antes x+c+1
+  # Dependency between co-occurrence states: p(s_t|s_t-1,d_t-1,a_t-1)
+  invisible(sapply(1:length(theta_s), function(x) { sapply(1:length(values_a), function(y) {set.seed(x+y+1)  
     theta_s[[x]][[y]] <<- rdirichlet(nrow(theta_s[[x]][[y]]) ,rep(1,nrow(theta_s[[x]][[y]])))
-    # 1. no puede haber dos activaciones/desactivaciones seguidas
+    # 1. There cannot be two activations/deactivations in a row
     theta_s[[x]][[y]][2,3] <<- 0
     theta_s[[x]][[y]][3,2] <<- 0
     theta_s[[x]][[y]][1,4] <<- 0
-    # 2. Si se desactiva una disease, en el tiempo t-1 tiene que darse esa disease (depende de como se defina combinationsDisease)
+    # 2. If a disease is deactivated, then in time t-1, that disease must have occurred (depending on how combinationsDisease is defined)
     if (x==1) {theta_s[[x]][[y]][1,3] <<- 0; theta_s[[x]][[y]][2,2] <<- 0; theta_s[[x]][[y]][2,1] <<- 0 ;theta_s[[x]][[y]][2,4] <<- 0}
     if (x==2) {theta_s[[x]][[y]][1,2] <<- 0; theta_s[[x]][[y]][3,3] <<- 0; theta_s[[x]][[y]][3,1] <<- 0; theta_s[[x]][[y]][3,4] <<- 0}
     
@@ -45,7 +45,7 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
                                                      function(x) {set.seed(x+c+1)  #antes x+c+1
                                                        theta_d[[c]][[x]][t(combinationsDisease[x,]),] <<- t(rdirichlet(1,rep(1,sum(combinationsDisease[x,]))) )})))
   
-  lapply(1:num.classes, function(c) (theta_d[[c]][[1]]<<- (theta_d[[c]][[1]] +0.05 )/(sum(theta_d[[c]][[1]]+0.05 )))) # para que no sean valores muy cercanos a 0
+  lapply(1:num.classes, function(c) (theta_d[[c]][[1]]<<- (theta_d[[c]][[1]] +0.05 )/(sum(theta_d[[c]][[1]]+0.05 )))) # To avoid values that are very close to 0
   set.seed(seed)
   init_a_d <- empty_theta_a_d(values_a)[[1]]
   invisible(sapply(1:length(init_a_d), function(x) init_a_d[[x]][1:(length(values_a)),] <<- t(rdirichlet(1,rep(1,length(values_a))) )))
@@ -53,7 +53,7 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
   theta_a_d <- empty_theta_a_d(values_a)[[2]]
   invisible(sapply(1:length(values_d), function(c) sapply(1:(nrow(theta_a_d[[c]])), function(x) theta_a_d[[c]][x,] <<- c(rdirichlet(1,rep(1,length(values_a)))) )))
   
-  # No dejamos que ciertos valores sean muy bajos:
+  # We prevent certain values from being too low.
   smoothingParameters(c(0,0,0.05,0.05,0.01))
   combinationsDisease <- rbind(combinationsDisease, c(FALSE,FALSE))
   
@@ -64,7 +64,7 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
   originalClass <- rep(0,nrow(dataset))
   list_a <- list()
   values_s <- 1:nrow(theta_s[[1]][[1]])
-  # Muestreamos secuencias a partir del modelo generador
+  # We sample sequences from the generative model
   set.seed(seed)
   N<-1
   for (N in 1:n){ #for each patient
@@ -72,24 +72,24 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
     originalClass[N] <- c
     dd <- c()
     aa <- c()
-    ActiveDiseases <- rep(TRUE, length(values_d)) # para que entre en el bucle
+    ActiveDiseases <- rep(TRUE, length(values_d)) # To enter the loop
     prev_ActiveDiseases <- rep(FALSE, length(values_d))
     on <- TRUE
-    while (on){  # termina cuando todas las enfermedades han finalizado
+    while (on){  # The process is not yet finished (once a disease is deactivated, it cannot be reactivated
       # sample s
-      PossibleDiseases <- EndPositions[N,]==0 #todavia no han finalizado (una vez se desactiva una enfermedad no puede volver a activarse)
-      if (length(dd)==0){ # Inicializacion
-        r <- sample(values_s[-length(values_s)],1, prob = init_s) # con el "Active Disease" que empezamos
+      PossibleDiseases <- EndPositions[N,]==0 #
+      if (length(dd)==0){ # Inicialization
+        r <- sample(values_s[-length(values_s)],1, prob = init_s) #With the 'Active Disease' we started with
         last_d_position <- rep(0,length(values_d))
         
-      } else if (sum(EndPositions[N,])>0) { # si alguna disease ya se ha desactivado
+      } else if (sum(EndPositions[N,])>0) { # If any disease has already been deactivated
         r_prev <- r
         d_disactive <- which(PossibleDiseases==FALSE)
         r_delete <- which(sapply(1:nrow(combinationsDisease), function(x) TRUE %in% as.vector(combinationsDisease[x,d_disactive]==rep(TRUE,length(d_disactive))))==TRUE) # las combinaciones que no hay que considerar
         if (length(values_s[-r_delete])>1){
           r<- sample( values_s[-r_delete],size =  1, prob = as.numeric(theta_s[[as.numeric(dd[length(dd)])]][[which(values_a==aa[length(aa)])]][r_prev,][-r_delete]))
         } 
-        # si no se mantiene la r anterior, no cambia porque significa que solo queda esa enfermedad
+        # If the previous 'r' is not maintained, it doesn't change because it means that only that disease remains
         
       } else {
         r_prev <- r
@@ -98,8 +98,8 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
       
       ActiveDiseases <- combinationsDisease[r,]
       
-      if (sum(ActiveDiseases)==0){ # todas las diseases estan disactivadas (r=max(r))
-        if (length(aa) > m  |  length(aa)<5) { # se resetea si pasa del maximo de actuaciones
+      if (sum(ActiveDiseases)==0){ # All diseases are deactivated (r=max(r))
+        if (length(aa) > m  |  length(aa)<5) { #It resets if it exceeds the maximum number of activations
           dd <- c()
           aa <- c()
           ActiveDiseases <- rep(TRUE,length(values_d))
@@ -114,19 +114,18 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
         }
       }
       
-      theta_d_n <- theta_d[[c]][[r]] # para iniciar con la disease sampleada para ss
+      theta_d_n <- theta_d[[c]][[r]] # To start with the sampled disease for ss
       
-      # ACTIVACION
-      if (length(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE))>0){ # significa que se acaba de activar un disease -> entramos en un estado nuevo
-        dvalue_act <-  as.numeric(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE)) # la disease que acaba de activarse
-        #dd <- c(dd,dvalue) NO PODEMOS ASIGNAR DIRECTAMENTE LA DISEASE => d_t|s_t,s_t-1 y no es nuestro caso
+      # ACTIVATION
+      if (length(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE))>0){ # It means that a disease has just been activated -> we enter a new state
+        dvalue_act <-  as.numeric(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE)) # The disease that has just been activated
         dvalue <- sample(rownames(theta_d_n), size=1, prob = as.vector(theta_d_n[,]), replace=TRUE)
         dd <- c(dd, dvalue)
-        InitialPositions[N,dvalue_act] <- length(dd) # de este punto en adelante ya cabe la posibilidad de que se de esa disease
+        InitialPositions[N,dvalue_act] <- length(dd) #From this point onwards, there is now the possibility of that disease occurring
       } 
       
-      # DESACTIVACION
-      else if (length(which(prev_ActiveDiseases==TRUE & ActiveDiseases==FALSE))>0){ # Si una enfermedad se desactiva
+      # DEACTIVATION
+      else if (length(which(prev_ActiveDiseases==TRUE & ActiveDiseases==FALSE))>0){ # If a disease is deactivated
         EndPositions[N, as.numeric(dvalue)] <- last_d_position[as.numeric(dvalue)] +1
         dvalue <- sample(rownames(theta_d_n), size=1, prob = as.vector(theta_d_n[,]), replace=TRUE)
         dd <-  c(dd, dvalue)
@@ -137,7 +136,7 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
       
       
       # sample a
-      if (last_d_position[as.numeric(dvalue)]==0) { # la primera vez que aparece la variable oculta d muestreamos de init
+      if (last_d_position[as.numeric(dvalue)]==0) { # The first time the hidden variable 'd' appears, we sample from init
         aa <- c(aa, sample(rownames(init_a_d[[as.numeric(dvalue)]]), size=1, prob= init_a_d[[as.numeric(dvalue)]][,]) )
         last_d_position[as.numeric(dvalue)] <- length(dd)
         
@@ -154,7 +153,6 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
     }
     dataset[N,1:length(aa)] <- aa
     originalDiseaseSeq[N,1:length(dd)] <- dd
-    #EndPositions[N,] <- last_d_position
   }
   return(list(theta_c = theta_c, init_s = init_s, theta_s = theta_s, theta_d= theta_d, init_a_d = init_a_d,theta_a_d= theta_a_d, dataset= dataset,
               originalDiseaseSequence= originalDiseaseSeq, InitialPositions = InitialPositions ,EndPositions=EndPositions, 
@@ -162,10 +160,9 @@ generateModel_2diseases <- function(n,m, values_d, values_a, num.classes, seed){
 }
 
 
-
+# Function for generating data considering 3 diseases
 generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
-  # para generar 3 diseases
-  
+
   environment(smoothingParameters_model2) <- environment()
   set.seed(seed)
   library(gtools)
@@ -179,14 +176,14 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
   # x= disease
   # y = action
   
-  # Dependencia entre estados de co-ocurrencia
+  # Dependence within co-occurrence states
   invisible(sapply(1:length(theta_s), function(x) { sapply(1:length(values_a), function(y) {set.seed(x+y+1)  #antes x+c+1
     theta_s[[x]][[y]] <<- rdirichlet(nrow(theta_s[[x]][[y]]) ,rep(1,nrow(theta_s[[x]][[y]])))
-    # Favorecemos a mantenerse en el mismo estado
+
     sapply(1:nrow(theta_s[[x]][[y]]), function(j) {theta_s[[x]][[y]][j,j] <<-theta_s[[x]][[y]][j,j] +1 } )
     # Assumptions:
-    # 1. no puede haber dos activaciones/desactivaciones seguidas
-    # 2. Si se desactiva una disease, en el tiempo t-1 tiene que darse esa disease (depende de como se defina combinationsDisease)
+    # 1. There can't be two activations/deactivations in a row
+    # 2. If a disease is deactivated, then at time t-1, that disease must have occurred (depending on how combinationsDisease is defined)
     if (x==1) {
       theta_s[[x]][[y]][1,3:8] <<- 0; theta_s[[x]][[y]][2,1:8] <<- 0; theta_s[[x]][[y]][3,c(2,5:8)] <<- 0
       theta_s[[x]][[y]][4,1:8] <<- 0; theta_s[[x]][[y]][5,c(2:4,7:8)] <<- 0; theta_s[[x]][[y]][6, 1:8] <<- 0
@@ -219,7 +216,7 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
   theta_a_d <- empty_theta_a_d(values_a)[[2]]
   invisible(sapply(1:length(values_d), function(c) sapply(1:(nrow(theta_a_d[[c]])), function(x) theta_a_d[[c]][x,] <<- c(rdirichlet(1,rep(1,length(values_a)))) )))
   
-  # SMOOTHING -- No dejamos que ciertos valores sean muy bajos:
+  # SMOOTHING
   smoothingParameters_model2(c(0,0,0.05,0.05, 1e-3))
   combinationsDisease <- rbind(combinationsDisease, rep(FALSE,length(values_d)))
   
@@ -230,7 +227,7 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
   originalClass <- rep(0,nrow(dataset))
   list_a <- list()
   values_s <- 1:nrow(theta_s[[1]][[1]])
-  # Muestreamos secuencias a partir del modelo generador
+
   set.seed(seed)
   N<-1
   for (N in 1:n){ #for each patient
@@ -238,24 +235,24 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
     originalClass[N] <- c
     dd <- c()
     aa <- c()
-    ActiveDiseases <- rep(TRUE, length(values_d)) # para que entre en el bucle
+    ActiveDiseases <- rep(TRUE, length(values_d)) 
     prev_ActiveDiseases <- rep(FALSE, length(values_d))
     on <- TRUE
-    while (on){  # termina cuando todas las enfermedades han finalizado
+    while (on){  # The process ends when all diseases have concluded.
       # sample s
-      PossibleDiseases <- EndPositions[N,]==0 #todavia no han finalizado (una vez se desactiva una enfermedad no puede volver a activarse)
-      if (length(dd)==0){ # Inicializacion
-        r <- sample(values_s[-length(values_s)],1, prob = init_s) # con el "Active Disease" que empezamos
+      PossibleDiseases <- EndPositions[N,]==0 # The process continues until all diseases have concluded (once a disease is deactivated, it cannot be reactivated)
+      if (length(dd)==0){ # Initialization
+        r <- sample(values_s[-length(values_s)],1, prob = init_s) # starting with the 'Active Disease' we began with
         last_d_position <- rep(0,length(values_d))
         
-      } else if (sum(EndPositions[N,])>0) { # si alguna disease ya se ha desactivado
+      } else if (sum(EndPositions[N,])>0) { # If any disease has already been deactivated
         r_prev <- r
         d_disactive <- which(PossibleDiseases==FALSE)
-        r_delete <- which(sapply(1:nrow(combinationsDisease), function(x) TRUE %in% as.vector(combinationsDisease[x,d_disactive]==rep(TRUE,length(d_disactive))))==TRUE) # las combinaciones que no hay que considerar
+        r_delete <- which(sapply(1:nrow(combinationsDisease), function(x) TRUE %in% as.vector(combinationsDisease[x,d_disactive]==rep(TRUE,length(d_disactive))))==TRUE) # The combinations that should not be considered
         if (length(values_s[-r_delete])>1){
           r<- sample( values_s[-r_delete],size =  1, prob = as.numeric(theta_s[[as.numeric(dd[length(dd)])]][[which(values_a==aa[length(aa)])]][r_prev,][-r_delete]))
         } 
-        # si no se mantiene la r anterior, no cambia porque significa que solo queda esa enfermedad
+        # If r does not remain the same, it does not change because it means that only that disease remains
         
       } else {
         r_prev <- r
@@ -264,8 +261,8 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
       
       ActiveDiseases <- combinationsDisease[r,]
       
-      if (sum(ActiveDiseases)==0){ # todas las diseases estan disactivadas (r=max(r))
-        if (length(aa) > m  |  length(aa)<5) { # se resetea si pasa del maximo de actuaciones
+      if (sum(ActiveDiseases)==0){ #All diseases are deactivated (r=max(r)
+        if (length(aa) > m  |  length(aa)<5) { #It resets if it exceeds the maximum number of activations
           dd <- c()
           aa <- c()
           ActiveDiseases <- rep(TRUE,length(values_d))
@@ -280,19 +277,19 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
         }
       }
       
-      theta_d_n <- theta_d[[c]][[r]] # para iniciar con la disease sampleada para ss
+      theta_d_n <- theta_d[[c]][[r]] # To start with the sampled disease for ss
       
-      # ACTIVACION
-      if (length(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE))>0){ # significa que se acaba de activar un disease -> entramos en un estado nuevo
-        dvalue_act <-  as.numeric(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE)) # la disease que acaba de activarse
-        #tenemos que muestrear la enfermedad de manera normal
+      # ACTIVATION
+      if (length(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE))>0){ # It means that a disease has just been activated -> we enter a new state
+        dvalue_act <-  as.numeric(which(prev_ActiveDiseases==FALSE & ActiveDiseases==TRUE)) # The disease that has just been activated
+        # We need to sample the disease in the usual way
         dvalue <- sample(rownames(theta_d_n), size=1, prob = as.vector(theta_d_n[,]), replace=TRUE)
         dd <- c(dd, dvalue)
-        InitialPositions[N,dvalue_act] <- length(dd) # de este punto en adelante ya cabe la posibilidad de que se de esa disease
+        InitialPositions[N,dvalue_act] <- length(dd) # From this point onwards, there is now the possibility of that disease occurring
       } 
       
-      # DESACTIVACION
-      else if (length(which(prev_ActiveDiseases==TRUE & ActiveDiseases==FALSE))>0){ # Si una enfermedad se desactiva
+      # DEACTIVATION
+      else if (length(which(prev_ActiveDiseases==TRUE & ActiveDiseases==FALSE))>0){ # If a disease is deactivated
         EndPositions[N, as.numeric(dvalue)] <- last_d_position[as.numeric(dvalue)] +1
         dvalue <- sample(rownames(theta_d_n), size=1, prob = as.vector(theta_d_n[,]), replace=TRUE)
         dd <-  c(dd, dvalue)
@@ -303,7 +300,7 @@ generateModel_3diseases <- function(n,m, values_d, values_a, num.classes, seed){
       
       
       # sample a
-      if (last_d_position[as.numeric(dvalue)]==0) { # la primera vez que aparece la variable oculta d muestreamos de init
+      if (last_d_position[as.numeric(dvalue)]==0) { # The first time the hidden variable d appears, we sample from init
         aa <- c(aa, sample(rownames(init_a_d[[as.numeric(dvalue)]]), size=1, prob= init_a_d[[as.numeric(dvalue)]][,]) )
         last_d_position[as.numeric(dvalue)] <- length(dd)
         
@@ -341,8 +338,6 @@ empty_theta_s <- function(values_d){
   theta_si <- as.data.frame(matrix(rep(0,length(values_s)**2), ncol=length(values_s)))
   rownames(theta_si) <- values_s
   colnames(theta_si) <- values_s
-  
-  #theta_d <- rep(list(theta_di), nrow(combinationsDisease)) # tantos modelos como diseases activas haya (progresion en el tiempo)
   theta_s <-  lapply(1:length(values_d), function(yy) lapply(1:length(values_a), function(y) theta_si)) 
   return(theta_s)
 }
@@ -357,7 +352,6 @@ empty_theta_d <- function(values_d, num.classes){
   colnames(combinationsDisease) <- rep(paste0("d",1:length(values_d)))
   theta_di <- as.data.frame(matrix(rep(0,length(values_d)), ncol=1))
   rownames(theta_di) <- values_d
-  #theta_d <- rep(list(theta_di), nrow(combinationsDisease)) # tantos modelos como diseases activas haya (progresion en el tiempo)
   theta_d <- lapply(1:num.classes, function(x) rep(list(theta_di), nrow(combinationsDisease)) ) 
   return(list(theta_d, combinationsDisease))
 }

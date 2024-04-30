@@ -1,5 +1,5 @@
 # 
-# This file includes code for the paper ____________-. 
+# This file includes code for the paper "A probabilistic generative model to discover the treatments of coexisting diseases with missing data." 
 # @author: Onintze Zaballa
 # 
 source("GenerativeModel/generateModel.R")
