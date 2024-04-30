@@ -185,7 +185,7 @@ Estep <- function(a, theta_c, theta_s, theta_d, init_a_d, theta_a_d, fixedPositi
   a_last <- which(values_a==a[length(a)])
   d_last <- which(fixedPositions==length(a))
   ActiveDiseases <- fixedPositions ==length(a)
-  r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+  r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # A row that includes diseases just like our model
   r <- nrow(combinationsDisease)
   theta_s_n <- theta_s[[d_last]][[a_last]][r_prev,r]
   f_matrix[t(cbind(fixedPositions + 1))] <<-   theta_s_n*f_matrix[t(cbind(fixedPositions + 1))]
@@ -198,7 +198,7 @@ Estep <- function(a, theta_c, theta_s, theta_d, init_a_d, theta_a_d, fixedPositi
   a_last <- which(values_a==a[length(a)])
   d_last <- which(fixedPositions==length(a))
   ActiveDiseases <- fixedPositions ==length(a)
-  r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+  r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # A row that includes diseases just like our model
   r <- nrow(combinationsDisease)
   theta_s_n <- theta_s[[d_last]][[a_last]][r_prev,r]
   
@@ -236,9 +236,9 @@ Mstep <- function(a, F_matrix, G_matrix, fixedPositions, fixedPositions_init){
   
   a_prev <- which(values_a==a[t_a-1])
   prev_ActiveDiseases <- c(fixedPositions_init <= (t_a-1) & c(fixedPositions)>=(t_a-1))
-  r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == prev_ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+  r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == prev_ActiveDiseases))))
   ActiveDiseases <- c(fixedPositions_init <= t_a & c(fixedPositions)>=t_a)
-  r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+  r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
   
   if ((t_a-1) %in% fixedPositions){
     d_prev <- which(fixedPositions==t_a-1)
@@ -340,14 +340,14 @@ Mstep <- function(a, F_matrix, G_matrix, fixedPositions, fixedPositions_init){
         auxpos <- values_d[-d]
 
         prev_ActiveDiseases <- c(fixedPositions_init <= (t_a-1) & c(fixedPositions)>=(t_a-1))
-        r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == prev_ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+        r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == prev_ActiveDiseases))))
         ActiveDiseases <- c(fixedPositions_init <= t_a & c(fixedPositions)>=t_a)
-        r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) # row que incluye las diseases igual que nuestro modelo
+        r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases)))) 
         a_prev <- which(values_a==a[t_a-1])
     
         jj<-1
         for (jj in 1:length(auxpos)){
-          d_prev <- as.numeric(auxpos[jj]) # la que fijamos como anterior
+          d_prev <- as.numeric(auxpos[jj]) # The one we set as previous
           
           theta_s_n <- theta_s[[d_prev]][[a_prev]][r_prev,r]
           
@@ -376,7 +376,7 @@ Mstep <- function(a, F_matrix, G_matrix, fixedPositions, fixedPositions_init){
     prev_ActiveDiseases <- c(fixedPositions_init <= (t_a-1) & c(fixedPositions)>=(t_a-1))
     r_prev <- which(apply(combinationsDisease, 1, function(x) return(all(x == prev_ActiveDiseases)))) 
     ActiveDiseases <- c(fixedPositions_init <= t_a & c(fixedPositions)>=t_a)
-    r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases))))# row que incluye las diseases igual que nuestro modelo
+    r <- which(apply(combinationsDisease, 1, function(x) return(all(x == ActiveDiseases))))
     a_prev <- which(values_a==a[t_a-1])
 
     for (d in 1:length(values_d)){
@@ -633,7 +633,6 @@ EM <- function(dataset, values_d, values_a, InitialPositions, EndPositions, K, m
   
   time2 <- Sys.time()
   dataexport <- data.frame('Experiment' = seed,
-                           'Time' = time2-time1,
                            'N Seq'= n,
                            'N classes' = num.classes,
                            'N diseases'=length(values_d),
