@@ -223,6 +223,7 @@ real_theta_s <- originalModel$theta_s
 real_theta_d <- originalModel$theta_d
 real_init_a_d <- originalModel$init_a_d
 real_theta_a_d <- originalModel$theta_a_d
+real_init_s <- originalModel$init_s
 dataset <- originalModel$dataset
 originalDiseaseSeq <- originalModel$originalDiseaseSequence
 EndPositions <- originalModel$EndPositions  
